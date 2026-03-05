@@ -1,5 +1,3 @@
-version: "3.9"
-
 # ─────────────────────────────────────────────────────────────────
 # Enterprise Knowledge Brain — Docker Compose
 # RAM budget (8 GB machine):
@@ -23,11 +21,6 @@ services:
         limits:
           memory: 6g
     restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:11434/api/tags"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
 
   # ── App (FastAPI + Streamlit) ────────────────────────────────────
   app:
@@ -49,7 +42,7 @@ services:
           cpus: "2.0"
     depends_on:
       ollama:
-        condition: service_healthy
+        condition: service_started
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]

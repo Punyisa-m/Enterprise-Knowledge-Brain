@@ -18,3 +18,9 @@ exec streamlit run src/app.py \
   --server.address 0.0.0.0 \
   --server.headless true \
   --server.fileWatcherType none
+
+echo "⏳ Waiting for Ollama..."
+until wget -qO- http://ollama:11434/api/tags > /dev/null 2>&1; do
+  sleep 3
+done
+echo "✅ Ollama ready"

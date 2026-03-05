@@ -24,16 +24,16 @@
 
 | Category | What's included |
 |---|---|
-| 🔐 **Authentication** | Login wall — ไม่เห็นเนื้อหาจนกว่าจะ sign in |
+| 🔐 **Authentication** | Login wall — You must sign in to view the content. |
 | 👥 **RBAC** | 4 roles × 4 departments × 4 security levels |
-| 🤖 **Local LLM** | Ollama + Llama 3.1 — ไม่มีข้อมูลออกนอกเครื่อง |
+| 🤖 **Local LLM** | Ollama + Llama 3.1 — Data does not leave the device. |
 | 🔍 **RAG Pipeline** | ChromaDB + all-MiniLM-L6-v2 embeddings |
-| 📡 **Streaming** | SSE streaming ผ่าน FastAPI → `st.write_stream` |
-| 📄 **Multi-format** | รองรับ PDF, DOCX, XLSX, TXT, Markdown |
+| 📡 **Streaming** | SSE streaming via FastAPI → `st.write_stream` |
+| 📄 **Multi-format** | Supports PDF, DOCX, XLSX, TXT, Markdown |
 | 🧱 **Bento UI** | Dark theme, glassmorphism, Gemini-style chat |
 | 📊 **Admin Panel** | CRUD users, permissions, documents, audit log |
-| 🐳 **Docker** | `docker compose up` พร้อม RAM limits |
-| 📝 **Audit Log** | ทุก query ถูก log — employee_id, dept, timestamp |
+| 🐳 **Docker** | `docker compose up` With RAM limits |
+| 📝 **Audit Log** | Every query is logged — employee_id, dept, timestamp |
 
 ---
 
@@ -69,12 +69,12 @@
 ### Prerequisites
 - Python 3.11+
 - [Ollama](https://ollama.ai) installed
-- 8 GB RAM (6 GB สำหรับ Llama 3.1, 1 GB สำหรับ app)
+- 8 GB RAM (6 GB for Llama 3.1, 1 GB for app)
 
 ### 1. Clone & Install
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/enterprise-knowledge-brain.git
+git clone https://github.com/Punyisa-m/Enterprise-Knowledge-Brain.git
 cd enterprise-knowledge-brain
 pip install -r requirements.txt
 ```
@@ -91,7 +91,7 @@ ollama pull llama3.1
 python scripts/setup_db.py
 ```
 
-ได้ demo users:
+get demo users:
 
 | Name | ID | Password | Role |
 |---|---|---|---|
@@ -113,7 +113,7 @@ uvicorn src.api:app --port 8000
 streamlit run src/app.py
 ```
 
-เปิด [http://localhost:8501](http://localhost:8501) ✅
+Open [http://localhost:8501](http://localhost:8501) ✅
 
 ---
 
@@ -152,14 +152,15 @@ enterprise-knowledge-brain/
 │   ├── llm_engine.py     # Ollama connector
 │   └── rag_pipeline.py   # Orchestrator — retrieval → filter → generate
 ├── scripts/
+│   ├── create_sample_docs.py # First-time create sample docs
 │   └── setup_db.py       # First-time DB setup + seed users
-├── documents/            # Source documents (git-ignored)
+├── documents/            # Source documents 
 │   ├── hr/
 │   ├── it/
 │   ├── finance/
 │   └── general/
-├── database/             # SQLite + ChromaDB files (git-ignored)
-├── logs/                 # Loguru rotating logs (git-ignored)
+├── database/             # SQLite + ChromaDB files
+├── logs/                 # Loguru rotating logs
 ├── docs/
 │   └── screenshots/      # README images
 ├── Dockerfile
@@ -181,9 +182,9 @@ analyst       │ L1  │ L2  │ L2      │ L2
 employee      │ L1  │ L1  │ L1      │ L1
 ```
 
-- ChromaDB filter สร้างแบบ dynamic ต่อ user session
+- Dynamic ChromaDB filters are generated per user session
 - `$and [ department $in [...] , security_level $lte N ]`
-- ไม่มีการ hardcode permission ในโค้ด — แก้ได้ผ่าน UI
+- No hardcoded permissions in the code — they can be modified through the UI
 
 ---
 
@@ -215,12 +216,12 @@ employee      │ L1  │ L1  │ L1      │ L1
 
 | Technique | Effect |
 |---|---|
-| `lazy_load()` on loaders | ป้องกัน MemoryError บน PDF ขนาดใหญ่ |
-| Batch upsert (50 chunks) | ลด in-memory list size |
-| `gc.collect()` ทุก page | คืน memory ให้ OS เร็วขึ้น |
-| 1 Uvicorn worker | ไม่ duplicate embedding model |
-| ChromaDB PersistentClient | Vectors อยู่ใน disk ไม่ใช่ RAM |
-| SSE streaming | ไม่ต้อง buffer คำตอบทั้งหมดก่อน |
+| `lazy_load()` on loaders | Preventing MemoryError on large PDF |
+| Batch upsert (50 chunks) | Optimize in-memory list usage |
+| `gc.collect()` Every page | Release memory back to the OS faster |
+| 1 Uvicorn worker | Do not duplicate the embedding model |
+| ChromaDB PersistentClient | Vectors are stored on disk, not in RAM |
+| SSE streaming | No need to buffer all responses beforehand |
 
 ---
 
@@ -251,15 +252,6 @@ Interactive docs: [http://localhost:8000/docs](http://localhost:8000/docs)
 2. Upload project files
 3. ใช้ `llama3.2:3b` แทน (2 GB — fits free tier)
 
----
-
-## 🤝 Contributing
-
-```bash
-git checkout -b feature/your-feature
-git commit -m "feat: your feature"
-git push origin feature/your-feature
-```
 
 ---
 

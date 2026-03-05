@@ -19,7 +19,7 @@ import ollama
 
 logger = logging.getLogger(__name__)
 
-DEFAULT_MODEL = "llama3.1"
+DEFAULT_MODEL = "llama3.2"
 
 # ── System prompt template ─────────────────────────────────────────────────────
 _SYSTEM_PROMPT_TEMPLATE = """You are the Enterprise Knowledge Brain, a secure internal AI assistant.
