@@ -1,12 +1,12 @@
-# ══ ❌ NEVER COMMIT: Runtime data ════════════════════════════════════
+# ══ NEVER COMMIT: Runtime data ════════════════════════════════════
 database/          # SQLite + ChromaDB — auto-created by setup_db.py
 database/*.db
 database/chroma/
 logs/              # Loguru rotating logs
 
-# ══ ❌ NEVER COMMIT: Real documents (may be sensitive) ════════════════
+# ══ NEVER COMMIT: Real documents (may be sensitive) ════════════════
 documents/         # Upload via Admin UI or run create_sample_docs.py
-# ✅ But keep the empty folder structure:
+# But keep the empty folder structure:
 !documents/.gitkeep
 !documents/hr/.gitkeep
 !documents/it/.gitkeep

@@ -954,7 +954,7 @@ Directory structure:
 
 Next steps:
   1. pip install -r requirements.txt
-  2. ollama pull llama3.1
+  2. ollama pull llama3.2
   3. python scripts/create_sample_docs.py   (already done!)
   4. streamlit run src/app.py
      → In the Admin panel, click "Bulk Ingest Sample Docs"

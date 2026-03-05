@@ -5,7 +5,7 @@
 ![Python](https://img.shields.io/badge/Python-3.11-3776AB?style=flat-square&logo=python&logoColor=white)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.111-009688?style=flat-square&logo=fastapi&logoColor=white)
 ![Streamlit](https://img.shields.io/badge/Streamlit-1.35-FF4B4B?style=flat-square&logo=streamlit&logoColor=white)
-![Ollama](https://img.shields.io/badge/Ollama-Llama%203.1-black?style=flat-square)
+![Ollama](https://img.shields.io/badge/Ollama-Llama%203.2-black?style=flat-square)
 ![ChromaDB](https://img.shields.io/badge/ChromaDB-0.5-orange?style=flat-square)
 ![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)
 
@@ -26,7 +26,7 @@
 |---|---|
 | 🔐 **Authentication** | Login wall — You must sign in to view the content. |
 | 👥 **RBAC** | 4 roles × 4 departments × 4 security levels |
-| 🤖 **Local LLM** | Ollama + Llama 3.1 — Data does not leave the device. |
+| 🤖 **Local LLM** | Ollama + Llama 3.2 — Data does not leave the device. |
 | 🔍 **RAG Pipeline** | ChromaDB + all-MiniLM-L6-v2 embeddings |
 | 📡 **Streaming** | SSE streaming via FastAPI → `st.write_stream` |
 | 📄 **Multi-format** | Supports PDF, DOCX, XLSX, TXT, Markdown |
@@ -57,7 +57,7 @@
        │                    │
   ┌────▼─────┐        ┌─────▼──────┐        ┌────────────┐
   │  SQLite  │        │  ChromaDB  │        │   Ollama   │
-  │  RBAC    │        │  Vectors   │        │ Llama 3.1  │
+  │  RBAC    │        │  Vectors   │        │ Llama 3.2  │
   │  Audit   │        │ (on-disk)  │        │  :11434    │
   └──────────┘        └────────────┘        └────────────┘
 ```
@@ -69,7 +69,7 @@
 ### Prerequisites
 - Python 3.11+
 - [Ollama](https://ollama.ai) installed
-- 8 GB RAM (6 GB for Llama 3.1, 1 GB for app)
+- 8 GB RAM (2 GB for Llama 3.2, 1 GB for app)
 
 ### 1. Clone & Install
 
@@ -82,7 +82,7 @@ pip install -r requirements.txt
 ### 2. Pull LLM model
 
 ```bash
-ollama pull llama3.1
+ollama pull llama3.2
 ```
 
 ### 3. Setup database & seed users
@@ -124,7 +124,7 @@ Open [http://localhost:8501](http://localhost:8501) ✅
 docker compose up --build -d
 
 # Pull model inside Ollama container (first time only)
-docker exec ekb_ollama ollama pull llama3.1
+docker exec ekb_ollama ollama pull llama3.2
 
 # Logs
 docker compose logs -f app
@@ -135,7 +135,7 @@ docker compose logs -f app
 | Service | Limit | Notes |
 |---|---|---|
 | `app` | 1 GB | Embeddings + ChromaDB client |
-| `ollama` | 6 GB | Llama 3.1 8B Q4 ≈ 5.5 GB |
+| `ollama` | 6 GB | Llama 3.2 3B Q4 ≈ 2 GB |
 | OS | 0.5 GB | Headroom |
 
 ---
@@ -191,7 +191,7 @@ employee      │ L1  │ L1  │ L1      │ L1
 ## 🛠️ Tech Stack
 
 **AI / RAG**
-- Ollama + Llama 3.1 (local inference)
+- Ollama + Llama 3.2 (local inference)
 - ChromaDB (persistent vector store)
 - Sentence Transformers `all-MiniLM-L6-v2` (local embeddings)
 - LangChain (document loaders + text splitter)

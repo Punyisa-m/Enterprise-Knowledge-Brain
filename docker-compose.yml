@@ -2,7 +2,7 @@
 # Enterprise Knowledge Brain — Docker Compose
 # RAM budget (8 GB machine):
 #   app       = max 1 GB  (embeddings + ChromaDB client)
-#   ollama    = max 6 GB  (Llama 3.1 8B Q4 ≈ 5.5 GB)
+#   ollama    = max 6 GB  (Llama 3.2 3B Q4 ≈ 2 GB)
 #   reserved  = 0.5 GB    (OS headroom)
 # ─────────────────────────────────────────────────────────────────
 

@@ -1,7 +1,7 @@
 """
 src/llm_engine.py
 -----------------
-Local LLM connector via Ollama (Llama 3.1).
+Local LLM connector via Ollama (Llama 3.2).
 
 Design principles
 -----------------
