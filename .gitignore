@@ -1,0 +1,44 @@
+# ══ ❌ NEVER COMMIT: Runtime data ════════════════════════════════════
+database/          # SQLite + ChromaDB — auto-created by setup_db.py
+database/*.db
+database/chroma/
+logs/              # Loguru rotating logs
+
+# ══ ❌ NEVER COMMIT: Real documents (may be sensitive) ════════════════
+documents/         # Upload via Admin UI or run create_sample_docs.py
+# ✅ But keep the empty folder structure:
+!documents/.gitkeep
+!documents/hr/.gitkeep
+!documents/it/.gitkeep
+!documents/finance/.gitkeep
+!documents/general/.gitkeep
+documents/*.txt
+documents/*.pdf
+documents/*.docx
+documents/*.xlsx
+
+# ══ Python ════════════════════════════════════════════════════════════
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+.eggs/
+.venv/
+venv/
+env/
+
+# ══ Secrets ═══════════════════════════════════════════════════════════
+.env
+.env.*
+.streamlit/secrets.toml
+
+# ══ OS / IDE ══════════════════════════════════════════════════════════
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo

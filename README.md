@@ -1,189 +1,272 @@
 # 🧠 Enterprise Knowledge Brain
 
-A production-ready, fully **local** RAG (Retrieval-Augmented Generation) system with **Role-Based Access Control (RBAC)**. Zero cloud dependencies — your data never leaves your machine.
+> **Local RAG system with Role-Based Access Control — runs 100% on-premise, zero cloud dependency.**
+
+![Python](https://img.shields.io/badge/Python-3.11-3776AB?style=flat-square&logo=python&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.111-009688?style=flat-square&logo=fastapi&logoColor=white)
+![Streamlit](https://img.shields.io/badge/Streamlit-1.35-FF4B4B?style=flat-square&logo=streamlit&logoColor=white)
+![Ollama](https://img.shields.io/badge/Ollama-Llama%203.1-black?style=flat-square)
+![ChromaDB](https://img.shields.io/badge/ChromaDB-0.5-orange?style=flat-square)
+![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)
 
 ---
 
-## Architecture Overview
+![Login](docs/screenshots/screenshot-login.png)
+![Chat](docs/screenshots/screenshot-chat.png)
+![Dashboard](docs/screenshots/screenshot-dashboard.png)
+![User](docs/screenshots/screenshot-user-mgmt.png)
+![Permission](docs/screenshots/screenshot-permissions.png)
+![Documents](docs/screenshots/screenshot-document.png)
+
+---
+
+## ✨ Features
+
+| Category | What's included |
+|---|---|
+| 🔐 **Authentication** | Login wall — ไม่เห็นเนื้อหาจนกว่าจะ sign in |
+| 👥 **RBAC** | 4 roles × 4 departments × 4 security levels |
+| 🤖 **Local LLM** | Ollama + Llama 3.1 — ไม่มีข้อมูลออกนอกเครื่อง |
+| 🔍 **RAG Pipeline** | ChromaDB + all-MiniLM-L6-v2 embeddings |
+| 📡 **Streaming** | SSE streaming ผ่าน FastAPI → `st.write_stream` |
+| 📄 **Multi-format** | รองรับ PDF, DOCX, XLSX, TXT, Markdown |
+| 🧱 **Bento UI** | Dark theme, glassmorphism, Gemini-style chat |
+| 📊 **Admin Panel** | CRUD users, permissions, documents, audit log |
+| 🐳 **Docker** | `docker compose up` พร้อม RAM limits |
+| 📝 **Audit Log** | ทุก query ถูก log — employee_id, dept, timestamp |
+
+---
+
+## 🏗️ Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────────────────┐
-│                         Streamlit UI  (src/app.py)                      │
-│   ┌─────────────┐  ┌────────────────────┐  ┌──────────────────────┐    │
-│   │ Employee    │  │  Chat Interface    │  │  Source Citations    │    │
-│   │ Login+Badge │  │  (streaming)       │  │  + Relevance Scores  │    │
-│   └──────┬──────┘  └─────────┬──────────┘  └──────────────────────┘    │
-└──────────┼───────────────────┼─────────────────────────────────────────┘
-           │                   │
-           ▼                   ▼
 ┌──────────────────────────────────────────────────────────┐
-│                  RAG Pipeline  (src/rag_pipeline.py)      │
-│   1. RBAC check → 2. Build ChromaDB filter               │
-│   3. Vector retrieval → 4. LLM generation                │
-│   5. Audit logging                                        │
-└──────┬───────────────────┬──────────────────┬────────────┘
-       │                   │                  │
-       ▼                   ▼                  ▼
-┌──────────────┐  ┌────────────────┐  ┌──────────────────┐
-│  SQLite RBAC │  │ ChromaDB +     │  │  Ollama          │
-│  (database/) │  │ SentenceXfmr   │  │  Llama 3.1       │
-│              │  │ (database/     │  │  (local LLM)     │
-│  employees   │  │  chroma/)      │  │                  │
-│  permissions │  │                │  │  System prompt   │
-│  audit_log   │  │  RBAC where-   │  │  enforces RBAC   │
-│              │  │  filter        │  │  + context-only  │
-└──────────────┘  └────────────────┘  └──────────────────┘
+│  Streamlit UI  :8501  (Dark Bento Theme)                 │
+│  Login Wall → Role-gated Navigation                      │
+└──────────────────┬───────────────────────────────────────┘
+                   │  httpx (REST + SSE)
+┌──────────────────▼───────────────────────────────────────┐
+│  FastAPI  :8000                                           │
+│  POST /query         — sync RAG                          │
+│  POST /query/stream  — SSE streaming                     │
+│  POST /ingest        — document upload (admin)           │
+│  GET  /health        — system health check               │
+│  GET  /stats         — vector store stats                │
+│  DELETE /document    — remove from vector store          │
+└──────┬────────────────────┬──────────────────────────────┘
+       │                    │
+  ┌────▼─────┐        ┌─────▼──────┐        ┌────────────┐
+  │  SQLite  │        │  ChromaDB  │        │   Ollama   │
+  │  RBAC    │        │  Vectors   │        │ Llama 3.1  │
+  │  Audit   │        │ (on-disk)  │        │  :11434    │
+  └──────────┘        └────────────┘        └────────────┘
 ```
 
 ---
 
-## Quick Start
+## 🚀 Quick Start
 
 ### Prerequisites
-
 - Python 3.11+
-- [Ollama](https://ollama.ai) installed and running
+- [Ollama](https://ollama.ai) installed
+- 8 GB RAM (6 GB สำหรับ Llama 3.1, 1 GB สำหรับ app)
 
-### 1. Install dependencies
+### 1. Clone & Install
+
 ```bash
+git clone https://github.com/YOUR_USERNAME/enterprise-knowledge-brain.git
+cd enterprise-knowledge-brain
 pip install -r requirements.txt
 ```
 
-### 2. Pull the LLM
+### 2. Pull LLM model
+
 ```bash
 ollama pull llama3.1
 ```
 
-### 3. Generate sample documents
+### 3. Setup database & seed users
+
 ```bash
-python scripts/create_sample_docs.py
+python scripts/setup_db.py
 ```
 
-### 4. Launch the app
+ได้ demo users:
+
+| Name | ID | Password | Role |
+|---|---|---|---|
+| Alice Johnson | EMP001 | `admin123` | Admin |
+| Bob Martinez | EMP002 | `hr_mgr` | Manager |
+| Frank Lee | EMP006 | `hr_emp` | Employee |
+| Grace Chen | EMP007 | `gen_emp` | Employee |
+
+### 4. Start services
+
 ```bash
+# Terminal 1 — LLM server
+ollama serve
+
+# Terminal 2 — AI API
+uvicorn src.api:app --port 8000
+
+# Terminal 3 — UI
 streamlit run src/app.py
 ```
 
-### 5. Ingest documents
-In the sidebar (logged in as Alice Johnson / admin):
-- Expand **"Bulk Ingest Sample Docs"**
-- Click **"Ingest All Documents in /documents"**
-
-### 6. Start chatting!
-Select any employee and ask questions.
+เปิด [http://localhost:8501](http://localhost:8501) ✅
 
 ---
 
-## RBAC Model
+## 🐳 Docker
 
-### Security Levels
-| Level | Label        | Description                           |
-|-------|--------------|---------------------------------------|
-| 1     | Public       | Company-wide, all employees           |
-| 2     | Internal     | Role-specific internal documents      |
-| 3     | Confidential | Manager-level and above               |
-| 4     | Restricted   | Admin/executive access only           |
+```bash
+# Build & start everything
+docker compose up --build -d
 
-### Roles & Access
-| Role     | Own Dept Max Level | Other Dept Max Level |
-|----------|--------------------|----------------------|
-| admin    | 4 (all depts)      | 4 (all depts)        |
-| manager  | 3                  | 2 (General only)     |
-| analyst  | 2                  | 1 (General only)     |
-| employee | 1                  | 1 (General only)     |
+# Pull model inside Ollama container (first time only)
+docker exec ekb_ollama ollama pull llama3.1
 
-### Demo Employees
-| ID     | Name          | Role     | Dept    | Password    |
-|--------|---------------|----------|---------|-------------|
-| EMP001 | Alice Johnson | admin    | IT      | admin123    |
-| EMP002 | Bob Martinez  | manager  | HR      | hr_mgr      |
-| EMP003 | Carol White   | manager  | Finance | fin_mgr     |
-| EMP004 | David Kim     | analyst  | IT      | it_analyst  |
-| EMP005 | Eva Brown     | analyst  | Finance | fin_analyst |
-| EMP006 | Frank Lee     | employee | HR      | hr_emp      |
-| EMP007 | Grace Chen    | employee | General | gen_emp     |
-| EMP008 | Henry Wilson  | manager  | IT      | it_mgr      |
+# Logs
+docker compose logs -f app
+```
 
-> **UI Demo Mode:** The Streamlit app uses a dropdown (no password) for quick testing. For production, replace with the `db.authenticate()` method.
+### RAM budget (8 GB machine)
+
+| Service | Limit | Notes |
+|---|---|---|
+| `app` | 1 GB | Embeddings + ChromaDB client |
+| `ollama` | 6 GB | Llama 3.1 8B Q4 ≈ 5.5 GB |
+| OS | 0.5 GB | Headroom |
 
 ---
 
-## Project Structure
+## 📁 Project Structure
 
 ```
 enterprise-knowledge-brain/
 ├── src/
-│   ├── __init__.py
-│   ├── app.py              # Streamlit UI
-│   ├── database.py         # SQLite RBAC engine
-│   ├── vector_store.py     # ChromaDB + embeddings + Universal Ingestor
-│   ├── llm_engine.py       # Ollama/Llama 3.1 connector
-│   └── rag_pipeline.py     # Orchestrator
+│   ├── api.py            # FastAPI — RAG endpoints + SSE streaming
+│   ├── app.py            # Streamlit — Dark UI + RBAC navigation
+│   ├── database.py       # SQLite RBAC — full CRUD, no hardcoded data
+│   ├── vector_store.py   # ChromaDB persistent client + ingestion
+│   ├── llm_engine.py     # Ollama connector
+│   └── rag_pipeline.py   # Orchestrator — retrieval → filter → generate
 ├── scripts/
-│   └── create_sample_docs.py  # Sample document generator
-├── documents/
-│   ├── hr/                 # HR department docs
-│   ├── it/                 # IT department docs
-│   ├── finance/            # Finance department docs
-│   └── general/            # Company-wide docs
-├── database/
-│   ├── rbac.db             # SQLite (auto-created)
-│   └── chroma/             # ChromaDB vectors (auto-created)
+│   └── setup_db.py       # First-time DB setup + seed users
+├── documents/            # Source documents (git-ignored)
+│   ├── hr/
+│   ├── it/
+│   ├── finance/
+│   └── general/
+├── database/             # SQLite + ChromaDB files (git-ignored)
+├── logs/                 # Loguru rotating logs (git-ignored)
+├── docs/
+│   └── screenshots/      # README images
+├── Dockerfile
+├── docker-compose.yml
+├── docker-entrypoint.sh
 └── requirements.txt
 ```
 
 ---
 
-## Sample Documents
+## 🔐 RBAC Design
 
-| File | Department | Security Level | Format |
-|------|-----------|----------------|--------|
-| vacation_policy.txt | HR | 2 (Internal) | TXT |
-| employee_benefits_2026.docx | HR | 2 (Internal) | DOCX |
-| server_security_protocols.pdf | IT | 3 (Confidential) | PDF |
-| wifi_access_guide.txt | IT | 1 (Public) | TXT |
-| q1_budget_allocation.xlsx | Finance | 3 (Confidential) | XLSX |
-| expense_reimbursement_rules.pdf | Finance | 2 (Internal) | PDF |
-| company_history_and_mission.md | General | 1 (Public) | MD |
+```
+Role          │ HR  │ IT  │ Finance │ General
+──────────────┼─────┼─────┼─────────┼────────
+admin         │ L4  │ L4  │ L4      │ L4
+manager       │ L3  │ L3  │ L3      │ L2
+analyst       │ L1  │ L2  │ L2      │ L2
+employee      │ L1  │ L1  │ L1      │ L1
+```
 
----
-
-## Key Design Decisions
-
-### Memory-Safe Ingestion
-All document loaders use `lazy_load()` which yields one page/element at a time, preventing `MemoryError` on large files. Chunks are upserted to ChromaDB in configurable batches (default: 50).
-
-### RBAC Enforcement
-The ChromaDB `where` filter is built from the employee's role and permissions table — never from user input. The filter uses `$or` conditions covering every (department × security_level) combination the employee is entitled to see.
-
-### Context-Only LLM
-The system prompt instructs Llama 3.1 to answer **only** from retrieved context. If no context covers the question, it returns a polite "I don't have sufficient information" response rather than hallucinating from training data.
-
-### Audit Trail
-Every query (including denied ones) is written to the `audit_log` SQLite table with: employee ID, query text, departments accessed, result count, and timestamp.
+- ChromaDB filter สร้างแบบ dynamic ต่อ user session
+- `$and [ department $in [...] , security_level $lte N ]`
+- ไม่มีการ hardcode permission ในโค้ด — แก้ได้ผ่าน UI
 
 ---
 
-## Configuration
+## 🛠️ Tech Stack
 
-Edit constants at the top of each module:
+**AI / RAG**
+- Ollama + Llama 3.1 (local inference)
+- ChromaDB (persistent vector store)
+- Sentence Transformers `all-MiniLM-L6-v2` (local embeddings)
+- LangChain (document loaders + text splitter)
 
-| Module | Constant | Default | Description |
-|--------|----------|---------|-------------|
-| `vector_store.py` | `EMBED_MODEL_NAME` | `all-MiniLM-L6-v2` | Local embedding model |
-| `llm_engine.py` | `DEFAULT_MODEL` | `llama3.1` | Ollama model name |
-| `rag_pipeline.py` | `n_results` | `5` | Chunks retrieved per query |
-| `rag_pipeline.py` | `min_relevance` | `0.30` | Minimum cosine similarity |
+**Backend**
+- FastAPI + Uvicorn (1 worker)
+- SSE Starlette (streaming)
+- SQLite + WAL mode (RBAC + audit)
+- Loguru (rotating logs)
+
+**Frontend**
+- Streamlit 1.35
+- Custom CSS — Dark glassmorphism, Bento grid, Gemini-style chat
+
+**DevOps**
+- Docker + docker-compose (memory limits)
+- python:3.11-slim base image
 
 ---
 
-## Production Hardening Checklist
+## ⚡ Performance Tips (8 GB RAM)
 
-- [ ] Replace dropdown login with proper password authentication using `db.authenticate()`
-- [ ] Add HTTPS (reverse proxy: nginx + certbot)
-- [ ] Enable Streamlit authentication (`st.secrets`)
-- [ ] Set `CHROMA_DIR` to a persistent volume in containerized deployments
-- [ ] Configure log rotation for the audit trail
-- [ ] Add rate limiting to the query endpoint
-- [ ] Replace `all-MiniLM-L6-v2` with a domain-specific embedding model for better retrieval
-- [ ] Consider `llama3.1:70b` for higher-quality answers (requires 48GB+ RAM)
+| Technique | Effect |
+|---|---|
+| `lazy_load()` on loaders | ป้องกัน MemoryError บน PDF ขนาดใหญ่ |
+| Batch upsert (50 chunks) | ลด in-memory list size |
+| `gc.collect()` ทุก page | คืน memory ให้ OS เร็วขึ้น |
+| 1 Uvicorn worker | ไม่ duplicate embedding model |
+| ChromaDB PersistentClient | Vectors อยู่ใน disk ไม่ใช่ RAM |
+| SSE streaming | ไม่ต้อง buffer คำตอบทั้งหมดก่อน |
+
+---
+
+## 📡 API Reference
+
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| `GET` | `/health` | — | System health + Ollama status |
+| `GET` | `/stats` | — | Vector store + DB stats |
+| `POST` | `/query` | Employee | Synchronous RAG query |
+| `POST` | `/query/stream` | Employee | SSE streaming RAG |
+| `POST` | `/ingest` | Admin | Upload & ingest document |
+| `DELETE` | `/document/{name}` | Admin | Remove from vector store |
+
+Interactive docs: [http://localhost:8000/docs](http://localhost:8000/docs)
+
+---
+
+## ☁️ Free Deployment Options
+
+### Streamlit Community Cloud
+1. Push to GitHub (public repo)
+2. [share.streamlit.io](https://share.streamlit.io) → New app → `src/app.py`
+3. Add secret: `API_BASE = "https://your-fastapi-server.com"`
+
+### Hugging Face Spaces (Docker)
+1. Create Space → SDK: Docker
+2. Upload project files
+3. ใช้ `llama3.2:3b` แทน (2 GB — fits free tier)
+
+---
+
+## 🤝 Contributing
+
+```bash
+git checkout -b feature/your-feature
+git commit -m "feat: your feature"
+git push origin feature/your-feature
+```
+
+---
+
+## 📄 License
+
+MIT © 2025 — Free to use, modify, and distribute.
+
+---
+
+<p align="center">Built with ❤️ · Local-first · Privacy-first · Free forever</p>
